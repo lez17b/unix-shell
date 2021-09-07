@@ -39,10 +39,13 @@ void  parse(char *line, char **argv)
 {
     static char* delimiter = " \n\t";
     char *token = strtok(line, delimiter);
-    while (token != NULL) {
+
+    while (token != NULL)
+    {
         *argv++ = token;
         token = strtok(NULL, delimiter);
     }
+
     *argv = (char *)'\0';                             /* mark the end of argument list  */
 }
 
@@ -60,18 +63,22 @@ void  execute(char **argv)
     pid_t  pid;
     int    status;
 
-    if ((pid = fork()) < 0) {                               /* fork a child process           */
+    if ((pid = fork()) < 0)
+    {                                                        /* fork a child process           */
         printf("*** ERROR: forking child process failed\n");
         exit(1);
     }
-    else if (pid == 0) {                                    /* for the child process:         */
-        if (execvp(*argv, argv) < 0) {                      /* execute the command  */
+    else if (pid == 0)
+    {                                                        /* for the child process:         */
+        if (execvp(*argv, argv) < 0)
+        {                                                    /* execute the command  */
             printf("*** ERROR: exec failed\n");
             exit(1);
         }
     }
-    else {                                                  /* for the parent:      */
-        while (wait(&status) != pid)                        /* wait for completion  */
+    else
+    {                                                        /* for the parent:      */
+        while (wait(&status) != pid)                         /* wait for completion  */
             ;
     }
 }
@@ -88,7 +95,8 @@ int main(void)
     char  *c = NULL;
 
     printf("Shell -> ");                             /*   display a prompt             */
-    while (fgets(line, sizeof(line), stdin)) {
+    while (fgets(line, sizeof(line), stdin))
+    {
 
         /* repeat until EOF .... */
         parse(line, argv);                           /*   parse the line     */
@@ -100,5 +108,14 @@ int main(void)
     return 0;
 }
 
+/*
+ * Under development
+ */
 
+void ScriptManager(FILE * file)
+{
+    file = fopen((const char *) &file, "r");
+    char buff[255];
+    fscanf(file, "%s", buff);
 
+}

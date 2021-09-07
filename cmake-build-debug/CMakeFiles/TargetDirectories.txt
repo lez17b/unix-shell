@@ -1,0 +1,3 @@
+/Users/lucianozavalazelada/CLionProjects/unix-shell/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/lucianozavalazelada/CLionProjects/unix-shell/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/lucianozavalazelada/CLionProjects/unix-shell/cmake-build-debug/CMakeFiles/Tiny_unix_shell.dir
