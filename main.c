@@ -25,6 +25,9 @@ extern FILE *stdin;
 extern FILE *stdout;
 extern FILE *stderr;
 
+#define MAXLINE 512
+#define MAXCMD 64
+
 
 /* ----------------------------------------------------------------- */
 /* FUNCTION  parse:                                                  */
@@ -38,6 +41,8 @@ extern FILE *stderr;
 void  parse(char *line, char **argv)
 {
     static char* delimiter = " \n\t";
+    static char* cmd_sep = ";";
+    char* cmds[MAXCMD];
     char *token = strtok(line, delimiter);
 
     while (token != NULL)
@@ -51,7 +56,7 @@ void  parse(char *line, char **argv)
 
 /* ----------------------------------------------------------------- */
 /* FUNCTION execute:                                                 */
-/*    This function receives a commend line argument list with the   */
+/*    This function receives a command line argument list with the   */
 /* first one being a file name followed by its arguments.  Then,     */
 /* this function forks a child process to execute the command using  */
 /* system call execvp().                                             */
@@ -88,15 +93,41 @@ void  execute(char **argv)
 /*                  The main program starts here                     */
 /* ----------------------------------------------------------------- */
 
-int main(void)
+int main(int argc, char *argv[])
 {
     char  line[1024];                                /* the input line                 */
-    char  *argv[64];                                 /* the command line argument      */
     char  *c = NULL;
-
+    int batch = 0;
     printf("Shell -> ");                             /*   display a prompt             */
+
+    if (argc > 1)
+    {
+        freopen(argv[1], "r", stdin);
+        if (stdin == NULL)
+        {
+            perror("**Batch file failed to open. Exiting.\n");
+            exit(EXIT_FAILURE);
+        }
+        batch = 1;
+    }
+
+
     while (fgets(line, sizeof(line), stdin))
     {
+        if (strlen(line) > MAXLINE)
+        {
+            perror("Input line max exceeded. Command Ignored. Retry.\n");
+            if(!batch)
+                printf("Shell -> ");
+            continue;
+        }
+        if (line[0] == 0 || line[0] == 13 || line[0] == 10 ||
+            line[0] == 32 || line[0] == 9)
+        {
+            if(!batch)
+                printf("Shell -> ");
+            continue;
+        }
 
         /* repeat until EOF .... */
         parse(line, argv);                           /*   parse the line     */
@@ -108,14 +139,4 @@ int main(void)
     return 0;
 }
 
-/*
- * Under development
- */
-
-void ScriptManager(FILE * file)
-{
-    file = fopen((const char *) &file, "r");
-    char buff[255];
-    fscanf(file, "%s", buff);
-
-}
+// Helper functions:
