@@ -19,11 +19,17 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <string.h>exit
+#include <string.h>
+
+extern FILE *stdin;
+extern FILE *stdout;
+extern FILE *stderr;
 
 #define MAXCMDLEN 512
 #define MAXCMD 64
 #define MAXARG 256
+#define MAXLINE 4095
+#define MAXLINEPLUS 4096
 
 int exit_flag = 0;
 char *com[MAXARG];
@@ -38,42 +44,43 @@ void execute(char **);
 /* non-white space character which indicates the beginning of an     */
 /* argument.  It saves the address to argv[], and then skips all     */
 /* non-white spaces which constitute the argument.                   */
-/* IMPORTANT: The code was modified using videos from Mr. Uh, the TA */
-/*  and me Luciano Zavala.                                           */
 /* ----------------------------------------------------------------- */
-void parse(char *line)
+
+void  parse(char *line, char **argv)
 {
-    // endpoint variables
-    static char* delimiter = " \t\n";
+    static char* delimiter = " \t";
     static char* cmd_sep = ";";
+    static char* ret = "\r";
 
-    // Tokenize the line
     char *token = strtok(line, cmd_sep);
-    int i = 0;
 
-    // loop for separating the commands by ;
+
+    int i = 0;
     while (token != NULL)
     {
         if(strcmp(token, " ") != 0)
         {
-            cmds[i] = token;
-            i++;
-
+            //argv[i] = token;
+           // *argv++ =  token;
+             cmds[i] = token;
+             i++;
+                //token = strtok(NULL, cmd_sep);
+            //i++;
         }
         token = strtok(NULL, cmd_sep);
     }
+    //argv[i] = NULL;
     cmds[i] = NULL;
 
-    // loop for separating the commands by space and line
     for(i = 0; cmds[i]; i++)
     {
         int j = 0;
-        if(strlen(cmds[i]) > MAXCMDLEN)
+        printf("Processing");
+        if(strlen(argv[i] > MAXCMDLEN))
         {
             perror("maximum command length exceed. Ignoring");
             continue;
         }
-        // Tokenize the commands
         token  = strtok(cmds[i], delimiter);
         while(token != NULL)
         {
@@ -82,10 +89,9 @@ void parse(char *line)
         }
         com[j] = NULL;
 
-        // Executing the function
         execute(com);
     }
-    /* mark the end of argument list  */
+                       /* mark the end of argument list  */
 }
 
 /* ----------------------------------------------------------------- */
@@ -130,13 +136,12 @@ void  execute(char **argv)
 int main(int argc, char *argv[MAXCMD])
 {
     char  line[1024];                                /* the input line                 */
+    char  *c = NULL;
     int batch = 0;
     printf("Shell -> ");                             /*   display a prompt             */
 
-    // verification of arguments for a file
     if (argc > 1)
     {
-        //Open a file
         freopen(argv[1], "r", stdin);
         if (stdin == NULL)
         {
@@ -146,7 +151,7 @@ int main(int argc, char *argv[MAXCMD])
         batch = 1;
     }
 
-    // gets the input from the line
+
     while (fgets(line, sizeof(line), stdin))
     {
         if (strlen(line) > MAXCMDLEN)
@@ -156,7 +161,6 @@ int main(int argc, char *argv[MAXCMD])
                 printf("Shell -> ");
             continue;
         }
-        // Check invalid characters
         if (line[0] == 0 || line[0] == 13 || line[0] == 10 ||
         line[0] == 32 || line[0] == 9)
         {
@@ -165,10 +169,12 @@ int main(int argc, char *argv[MAXCMD])
             continue;
         }
         /* repeat until EOF .... */
-        parse(line);                                 /*   parse the line     */
-        if (strcmp(argv[0], "exit") == 0)            /*   is it an "exit"?   */
+        parse(line, argv);                           /*   parse the line     */
+        if (strcmp(argv[0], "exit") == 0)            /* is it an "exit"?     */
             exit(0);                                 /*   exit if it is      */
-            printf("Shell -> ");                     /*   display a prompt   */
+            execute(argv);                           /* otherwise, execute the command */
+            printf("Shell -> ");                     /*   display a prompt             */
     }
     return 0;
+
 }
